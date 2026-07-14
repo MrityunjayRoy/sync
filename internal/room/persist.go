@@ -60,9 +60,9 @@ func (room *Room) recoverFromWAL(walPath string) error {
 		room.messages = append(room.messages, msg)
 
 		if msg.ID >= room.nextMessageID {
-			 room.nextMessageID = msg.ID + 1
+			room.nextMessageID = msg.ID + 1
 		}
-		 recoverd++
+		recoverd++
 	}
 
 	fmt.Printf("Recovered %d messages\n", recoverd)
@@ -88,39 +88,39 @@ func (room *Room) persistMessage(msg Message) error {
 }
 
 func (room *Room) createSnapshot() error {
-	 snapshotPath := filepath.Join(room.dataDir, "snapshot.json")
-	 tempPath := snapshotPath + ".tmp"
+	snapshotPath := filepath.Join(room.dataDir, "snapshot.json")
+	tempPath := snapshotPath + ".tmp"
 
-	 file, err := os.Create(tempPath)
-	 if err != nil {
-		 return err
-	 }
-	 defer file.Close()
+	file, err := os.Create(tempPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	 room.messageMu.Lock()
-	 data, err := json.MarshalIndent(room.messages, "", " ")
-	 room.messageMu.Unlock()
+	room.messageMu.Lock()
+	data, err := json.MarshalIndent(room.messages, "", " ")
+	room.messageMu.Unlock()
 
-	 if err != nil {
-		 return err
-	 }
+	if err != nil {
+		return err
+	}
 
-	 if _, err := file.Write(data); err != nil {
-		 return err
-	 }
+	if _, err := file.Write(data); err != nil {
+		return err
+	}
 
-	 if err := file.Sync(); err != nil {
-		 return err
-	 }
+	if err := file.Sync(); err != nil {
+		return err
+	}
 
-	 file.Close()
+	file.Close()
 
-	 if err := os.Rename(tempPath, snapshotPath); err != nil {
-		 return err
-	 }
+	if err := os.Rename(tempPath, snapshotPath); err != nil {
+		return err
+	}
 
-	 fmt.Printf("Snapshot created (%d messages)\n", len(room.messages))
-	 return room.truncateWAL()
+	fmt.Printf("Snapshot created (%d messages)\n", len(room.messages))
+	return room.truncateWAL()
 }
 
 func (room *Room) truncateWAL() error {
@@ -143,14 +143,14 @@ func (room *Room) truncateWAL() error {
 	return nil
 }
 
-func (room *Room) loadSnapshot() error{
+func (room *Room) loadSnapshot() error {
 	snapshotPath := filepath.Join(room.dataDir, "snapshot.json")
 	file, err := os.Open(snapshotPath)
 	if err != nil {
-		 if os.IsNotExist(err){
-			 return nil
-		 }
-		 return err
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
 	}
 	defer file.Close()
 
