@@ -53,25 +53,25 @@ func (room *Room) periodicSnapshot() {
 	}
 }
 
-func (room *Room) Run(){
+func (room *Room) Run() {
 	fmt.Println("Room started...")
 	go room.cleanUpInactiveClient()
 
 	for {
 		select {
-		case client := <- room.join:
+		case client := <-room.join:
 			room.handleJoin(client)
 
-		case client := <- room.leave:
+		case client := <-room.leave:
 			room.handleLeave(client)
 
-		case message := <- room.broadcast:
+		case message := <-room.broadcast:
 			room.handleBroadcast(message)
 
-		case client := <- room.listUsers:
+		case client := <-room.listUsers:
 			room.sendUserList(client)
 
-		case dm := <- room.directMessage:
+		case dm := <-room.directMessage:
 			room.handleDirectMessage(dm)
 		}
 	}
@@ -91,40 +91,39 @@ func (room *Room) Shutdown() {
 }
 
 func RunServer() {
-	room, err := NewRoom("./chatdata") 
+	room, err := NewRoom("./chatdata")
+	if err != nil {
+		fmt.Printf("Failed to initialize: %v\n", err)
+	}
+	defer room.Shutdown()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\n Recieved shutdown signal")
+		room.Shutdown()
+		os.Exit(0)
+	}()
+
+	go room.Run()
+
+	listener, err := net.Listen("tcp", ":9000")
+	if err != nil {
+		fmt.Printf("Error starting server: %v\n", err)
+	}
+	defer listener.Close()
+
+	fmt.Println("Server Started on :9000")
+
+	for {
+		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Printf("Failed to initialize: %v\n", err)
+			fmt.Println("Error accepting connections: %v\n", err)
+			continue
 		}
-		defer room.Shutdown()
-
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-		go func() {
-			 <- sigChan
-			 fmt.Println("\n Recieved shutdown signal")
-			 room.Shutdown()
-			 os.Exit(0)
-		}()
-
-		go room.Run()
-
-		listener, err := net.Listen("tcp", ":9000")
-		if err != nil {
-			fmt.Printf("Error starting server: %v\n", err)
-		}
-		defer listener.Close()
-
-		fmt.Println("Server Started on :9000")
-
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				fmt.Println("Error accepting connections: %v\n", err)
-				continue
-			}
-			fmt.Println("New Connection from", conn.RemoteAddr())
-			go handleClient(conn, room)
-		}
+		fmt.Println("New Connection from", conn.RemoteAddr())
+		go handleClient(conn, room)
+	}
 }
-
