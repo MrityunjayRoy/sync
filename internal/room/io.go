@@ -86,7 +86,7 @@ func handleClient(conn net.Conn, room *Room) {
 			session := room.createSession(username)
 			token := session.ReconnectToken
 			msg := fmt.Sprintf("Your Token: %s\n", token)
-			msg += fmt.Sprintf("To reconnect: reconnect:%s:%s\n", username.token)
+			msg += fmt.Sprintf("To reconnect: reconnect:%s:%s\n", username, token)
 			conn.Write([]byte(msg))
 		}
 	}
