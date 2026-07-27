@@ -55,7 +55,7 @@ func (room *Room) periodicSnapshot() {
 
 func (room *Room) Run() {
 	fmt.Println("Room started...")
-	go room.cleanUpInactiveClient()
+	go room.cleanupInactiveClients()
 
 	for {
 		select {
@@ -90,7 +90,7 @@ func (room *Room) Shutdown() {
 	fmt.Println("Shutdown completed gracefully!")
 }
 
-func RunServer() {
+func runServer() {
 	room, err := NewRoom("./chatdata")
 	if err != nil {
 		fmt.Printf("Failed to initialize: %v\n", err)

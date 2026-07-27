@@ -155,9 +155,9 @@ func (room *Room) findUserbyUsername(username string) *Client {
 		if username == c.username {
 			return c
 		}
-
-		return nil
 	}
+
+	return nil
 }
 
 func (c *Client) markActive() {
