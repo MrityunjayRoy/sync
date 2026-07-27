@@ -6,24 +6,24 @@ import (
 	"time"
 )
 
-func (room *Room) handleBroadcast (message string) {
+func (room *Room) handleBroadcast(message string) {
 	// parse message metadata
 	parts := strings.SplitN(message, ":", 2)
 	from := "system"
 	messageContent := message
 
-	if len(parts) == 2{
+	if len(parts) == 2 {
 		from = strings.Trim(parts[0], "[]")
 		messageContent = parts[1]
 	}
 
 	room.messageMu.Lock()
 	msg := Message{
-		ID: room.nextMessageID,
-		From: from,
-		Content: messageContent,
+		ID:        room.nextMessageID,
+		From:      from,
+		Content:   messageContent,
 		Timestamp: time.Now(),
-		Channel: "global",
+		Channel:   "global",
 	}
 	room.nextMessageID++
 	room.messages = append(room.messages, msg)
@@ -36,7 +36,7 @@ func (room *Room) handleBroadcast (message string) {
 
 	room.mu.Lock()
 	clients := make([]*Client, 0, len(room.clients))
-	for client := range room.clients{
+	for client := range room.clients {
 		clients = append(clients, client)
 	}
 	room.totalMesages++
@@ -54,7 +54,7 @@ func (room *Room) handleBroadcast (message string) {
 			fmt.Printf("Skipped %s (channel full) \n", client.username)
 		}
 	}
-} 
+}
 
 func (room *Room) handleJoin(client *Client) {
 	room.mu.Lock()
@@ -83,8 +83,8 @@ func (room *Room) handleLeave(client *Client) {
 	fmt.Printf("%s left (total: %d)\n", client.username, len(room.clients))
 
 	// close channel gracefully
-	select{
-	case <- client.outgoing:
+	select {
+	case <-client.outgoing:
 	default:
 		close(client.outgoing)
 	}
@@ -108,13 +108,13 @@ func (room *Room) sendHistory(client *Client, count int) {
 		historyMsg += fmt.Sprintf("[%s]: %s\n", msg.From, msg.Content)
 	}
 
-	select{
+	select {
 	case client.outgoing <- historyMsg:
 	default:
 	}
 }
 
-func (room *Room) sendUserList (client *Client) {
+func (room *Room) sendUserList(client *Client) {
 	room.mu.Lock()
 	defer room.mu.Unlock()
 
@@ -130,14 +130,14 @@ func (room *Room) sendUserList (client *Client) {
 	list += fmt.Sprintf("\nTotal Messages: %d\n", room.totalMesages)
 	list += fmt.Sprintf("Uptime: %s\n", time.Since(room.startTime).Round(time.Second))
 
-	select{
+	select {
 	case client.outgoing <- list:
 	default:
 	}
 }
 
-func (room *Room) handleDirectMessage (dm DirectMessage) {
-	select{
+func (room *Room) handleDirectMessage(dm DirectMessage) {
+	select {
 	case dm.toClient.outgoing <- dm.message:
 		dm.toClient.mu.Lock()
 		dm.toClient.messageSent++
@@ -147,12 +147,12 @@ func (room *Room) handleDirectMessage (dm DirectMessage) {
 	}
 }
 
-func (room *Room) findUserbyUsername (username string) *Client {
+func (room *Room) findUserbyUsername(username string) *Client {
 	room.mu.Lock()
 	defer room.mu.Unlock()
 
-	for c := range room.clients{
-		if username = c.username {
+	for c := range room.clients {
+		if username == c.username {
 			return c
 		}
 
