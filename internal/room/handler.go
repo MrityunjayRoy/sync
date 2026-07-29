@@ -94,7 +94,7 @@ func (room *Room) handleLeave(client *Client) {
 }
 
 func (room *Room) sendHistory(client *Client, count int) {
-	room.mu.Lock()
+	room.messageMu.Lock()
 	defer room.messageMu.Unlock()
 
 	start := len(room.messages) - count
@@ -103,7 +103,7 @@ func (room *Room) sendHistory(client *Client, count int) {
 	}
 
 	historyMsg := "Recent messages: \n"
-	for i := start; 1 < len(room.messages); i++ {
+	for i := start; i < len(room.messages); i++ {
 		msg := room.messages[i]
 		historyMsg += fmt.Sprintf("[%s]: %s\n", msg.From, msg.Content)
 	}

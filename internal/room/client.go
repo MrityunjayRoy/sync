@@ -11,13 +11,13 @@ import (
 func StartClient() {
 	conn, err := net.Dial("tcp", ":9000")
 	if err != nil {
-		fmt.Printf("Error connecting: ", err)
+		fmt.Printf("Error connecting: %v\n", err)
 		return
 	}
 
 	defer conn.Close()
 
-	fmt.Printf("Connected to chat server")
+	fmt.Println("Connected to chat server")
 	
 	//Background goroutine: read from server
 	go func() {
@@ -25,7 +25,7 @@ func StartClient() {
 		for {
 			message, err := reader.ReadString('\n')
 			if err != nil {
-				fmt.Printf("Disconnected from server")
+				fmt.Println("Disconnected from server")
 				os.Exit(0)
 			}
 
@@ -37,7 +37,7 @@ func StartClient() {
 
 	// main goroutine read from stdin
 	inputReader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Welcome to the server")
+	fmt.Println("Welcome to the server")
 
 	for {
 		fmt.Print(">> ")

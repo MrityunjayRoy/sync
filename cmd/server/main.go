@@ -9,6 +9,6 @@ import (
 
 func main() {
 	fmt.Println("Starting server from cmd/server...")
-	room.StartClient()
+	room.StartServer()
 	os.Exit(0)
 }

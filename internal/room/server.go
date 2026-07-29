@@ -80,7 +80,7 @@ func (room *Room) Run() {
 func (room *Room) Shutdown() {
 	fmt.Println("\n Shutting down...")
 	if err := room.createSnapshot(); err != nil {
-		fmt.Println("Error creating Final snapshot: %v\n", err)
+		fmt.Printf("Error creating final snapshot: %v\n", err)
 	}
 
 	if room.walFile != nil {
@@ -94,6 +94,7 @@ func runServer() {
 	room, err := NewRoom("./chatdata")
 	if err != nil {
 		fmt.Printf("Failed to initialize: %v\n", err)
+		return
 	}
 	defer room.Shutdown()
 
@@ -102,7 +103,7 @@ func runServer() {
 
 	go func() {
 		<-sigChan
-		fmt.Println("\n Recieved shutdown signal")
+		fmt.Println("\n Received shutdown signal")
 		room.Shutdown()
 		os.Exit(0)
 	}()
@@ -112,6 +113,7 @@ func runServer() {
 	listener, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		fmt.Printf("Error starting server: %v\n", err)
+		return
 	}
 	defer listener.Close()
 
@@ -120,7 +122,7 @@ func runServer() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Println("Error accepting connections: %v\n", err)
+			fmt.Printf("Error accepting connection: %v\n", err)
 			continue
 		}
 		fmt.Println("New Connection from", conn.RemoteAddr())

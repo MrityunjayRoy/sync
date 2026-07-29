@@ -67,9 +67,10 @@ func handleClient(conn net.Conn, room *Room) {
 			return
 		}
 	} else {
-		// prevent duplicate login
+		// New connection - check if username is already connected
 		if room.isUsernameConnected(username) {
 			conn.Write([]byte("Username already connected. Use reconnect if you lost connection. \n"))
+			return
 		}
 
 		// create or retrive session
